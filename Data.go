@@ -1,47 +1,73 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"time"
 )
 
-type buyers struct {
+type buyer struct {
+	IDBuyer   string `json:"id"`
+	NameBuyer string `json:"name"`
+	AgeBuyer  int    `json:"age"`
+}
+type product struct {
+	IDBuyer   string `json:"id"`
+	NameBuyer string `json:"name"`
+	AgeBuyer  int    `json:"age"`
+}
+type transactions struct {
 	IDBuyer   string `json:"id"`
 	NameBuyer string `json:"name"`
 	AgeBuyer  int    `json:"age"`
 }
 
 func main() {
+	start := time.Now()
 	url := "https://kqxty15mpg.execute-api.us-east-1.amazonaws.com"
-	endpoints := []string{"/buyers"} // "/products",
-	//  "/transactions"
-	date := []string{"1577836800"}
+	endpoint := []string{"/buyers", "/products", "/transactions"} // "/products",
+	date := "1577836800"
+	channelBuyer := make(chan string)
+	channelProduct := make(chan string)
+	channelTransaction := make(chan string)
 
-	info := getAllData(url, endpoints, date)
-	// info2 := getAllData(url, endpoints, []string{""})
-	var buyers []buyers
-	// fmt.Println(info)
-	json.Unmarshal([]byte(info), &buyers)
+	go getData(url+endpoint[0], date, channelBuyer)
+	go getData(url+endpoint[1], date, channelProduct)
+	go getData(url+endpoint[2], date, channelTransaction)
 
-	fmt.Println("Buyers : %+v", buyers)
+	dataTransactions := <-channelTransaction
+	dataProduct := <-channelProduct
+	dataBuyer := <-channelBuyer
+
+	fmt.Println(dataBuyer)
+	fmt.Println(dataProduct)
+	fmt.Println(dataTransactions)
+	timeUsed := time.Since(start)
+	fmt.Printf("Tiempo de ejecucion %s\n", timeUsed)
 
 }
 
-func getAllData(url string, endpoints []string, date []string) string {
-	data := "2"
-	if date[0] == "" {
-		date[0] = strconv.FormatInt(time.Now().Unix(), 10)
-	}
-	data = getDataBuyer(url + endpoints[0] + "?date=" + date[0])
-	fmt.Println(url + endpoints[0] + "?date=" + date[0])
-	return data
-}
+//  "/transactions"
+// info := getAllData(url, endpoints, date)
+// info2 := getAllData(url, endpoints, []string{""})
+// fmt.Println(info)
+// var buyers []buyer
+// json.Unmarshal([]byte(info), &buyers)
 
-func getDataBuyer(url string) string {
+// fmt.Println("Buyers : %+v", buyers[1])
+// func getAllData(url string, endpoints []string, date []string) string {
+// 	data := "2"
+// 	if date[0] == "" {
+// 		date[0] = strconv.FormatInt(time.Now().Unix(), 10)
+// 	}
+// 	data = getDataBuyer(url + endpoints[0] + "?date=" + date[0])
+// 	fmt.Println(url + endpoints[0] + "?date=" + date[0])
+// 	return data
+// }
+
+func getData(url string, date string, channel chan string) {
+	url = url + "?date=" + date
 	response, err := http.Get(url)
 	if err != nil {
 		fmt.Println(err)
@@ -50,5 +76,5 @@ func getDataBuyer(url string) string {
 	if err != nil {
 		fmt.Println(err)
 	}
-	return string(body)
+	channel <- string(body)
 }
