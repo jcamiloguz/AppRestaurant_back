@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -21,7 +23,7 @@ type Buyer struct {
 type Product struct {
 	IDProduct    string
 	NameProduct  string
-	PriceProduct string
+	PriceProduct int
 }
 
 //Transaction model
@@ -48,13 +50,15 @@ func main() {
 	go GetData(url+endpoint[2], date, channelTransaction)
 
 	// dataBuyer := <-channelBuyer
-	// dataProduct := <-channelProduct
-	dataTransactions := <-channelTransaction
+	dataProduct := <-channelProduct
+	// dataTransactions := <-channelTransaction
 
-	// buyers := CSVnTProductss(dataBucsv
-	// products := CSVToProductcts(dataProduct)
-	transactions := NSToTransactions(dataTransactions)
-	fmt.Println(transactions)
+	// buyers := JSONToBuyers(dataBuyer)
+	products := CSVToProducts(dataProduct)
+	// transactions := NSToTransactions(dataTransactions)
+	// fmt.Println(buyers)
+	fmt.Println(products)
+	// fmt.Println(transactions)
 	timeUsed := time.Since(start)
 	fmt.Printf("Tiempo de ejecucion %s\n", timeUsed)
 
@@ -86,13 +90,19 @@ func JSONToBuyers(data string) []Buyer {
 func CSVToProducts(data string) []Product {
 	all := strings.Split(strings.Replace(data, "\r\n", "\n", -1), "\n")
 
-	regex := regexp.MustCompile(`(?m)^(?P<id>\w+)\'(?P<name>[ \'\w\+\&\-\"\%\&\.À-ÿ]+)\'(?P<price>\d+)$`)
+	regex := regexp.MustCompile(`(?m)^(?P<id>\w+)\'\"?(?P<name>[ \'\w\+\&\-\%\&\.À-ÿ]+)\"?\'(?P<price>\d+)$`)
 
 	var products []Product
 	for _, line := range all {
 		info := regex.FindStringSubmatch(line)
 		if len(info) > 1 {
-			product := Product{info[1], info[2], info[3]}
+			price, err := strconv.Atoi(info[3])
+			if err != nil {
+				// handle error
+				fmt.Println(err)
+				os.Exit(2)
+			}
+			product := Product{info[1], info[2], price}
 			products = append(products, product)
 		}
 	}
