@@ -1,9 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -13,10 +16,11 @@ type buyer struct {
 	AgeBuyer  int    `json:"age"`
 }
 type product struct {
-	IDBuyer   string `json:"id"`
-	NameBuyer string `json:"name"`
-	AgeBuyer  int    `json:"age"`
+	IDProduct    string
+	NameProduct  string
+	PriceProduct string
 }
+
 type transactions struct {
 	IDBuyer   string `json:"id"`
 	NameBuyer string `json:"name"`
@@ -28,6 +32,7 @@ func main() {
 	url := "https://kqxty15mpg.execute-api.us-east-1.amazonaws.com"
 	endpoint := []string{"/buyers", "/products", "/transactions"} // "/products",
 	date := "1577836800"
+
 	channelBuyer := make(chan string)
 	channelProduct := make(chan string)
 	channelTransaction := make(chan string)
@@ -36,16 +41,38 @@ func main() {
 	go getData(url+endpoint[1], date, channelProduct)
 	go getData(url+endpoint[2], date, channelTransaction)
 
-	dataTransactions := <-channelTransaction
+	// dataTransactions := <-channelTransaction
 	dataProduct := <-channelProduct
-	dataBuyer := <-channelBuyer
+	// dataBuyer := <-channelBuyer
 
-	fmt.Println(dataBuyer)
-	fmt.Println(dataProduct)
-	fmt.Println(dataTransactions)
+	// buyers := JsonToBuyers(dataBuyer)
+	produsts := CsvToProducts(dataProduct)
+	// fmt.Println(buyers)
+	// fmt.Println(products)
+	// fmt.Println(dataProduct)
+	// fmt.Println(dataTransactions)
 	timeUsed := time.Since(start)
 	fmt.Printf("Tiempo de ejecucion %s\n", timeUsed)
 
+}
+func JsonToBuyers(data string) []buyer {
+	var buyers []buyer
+	json.Unmarshal([]byte(data), &buyers)
+	return buyers
+}
+func CsvToProducts(data string) []product {
+	all := strings.Split(strings.Replace(data, "\r\n", "\n", -1), "\n")
+	a := regexp.MustCompile(`(?m)^(?P<id>\w+)\'(?P<name>[ \'\w\+\&\-\"\%\&\.À-ÿ]+)\'(?P<price>\d+)$`)
+	var products []product
+	// fmt.Println(data)
+	for _, line := range all {
+		info := a.FindStringSubmatch(line)
+		if len(info) > 1 {
+			product := product{info[1], info[2], info[3]}
+			products = append(products, product)
+		}
+	}
+	return products
 }
 
 //  "/transactions"
