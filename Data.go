@@ -21,10 +21,12 @@ type product struct {
 	PriceProduct string
 }
 
-type transactions struct {
-	IDBuyer   string `json:"id"`
-	NameBuyer string `json:"name"`
-	AgeBuyer  int    `json:"age"`
+type transaction struct {
+	IDTransaction string
+	IDBuyer       string
+	IP            string
+	Device        string
+	IDproduct     []string
 }
 
 func main() {
@@ -41,58 +43,18 @@ func main() {
 	go getData(url+endpoint[1], date, channelProduct)
 	go getData(url+endpoint[2], date, channelTransaction)
 
-	// dataTransactions := <-channelTransaction
-	dataProduct := <-channelProduct
 	// dataBuyer := <-channelBuyer
+	// dataProduct := <-channelProduct
+	dataTransactions := <-channelTransaction
 
 	// buyers := JsonToBuyers(dataBuyer)
-	produsts := CsvToProducts(dataProduct)
-	// fmt.Println(buyers)
-	// fmt.Println(products)
-	// fmt.Println(dataProduct)
-	// fmt.Println(dataTransactions)
+	// products := CsvToProducts(dataProduct)
+	transactions := NfToTransactions(dataTransactions)
+	fmt.Println(transactions)
 	timeUsed := time.Since(start)
 	fmt.Printf("Tiempo de ejecucion %s\n", timeUsed)
 
 }
-func JsonToBuyers(data string) []buyer {
-	var buyers []buyer
-	json.Unmarshal([]byte(data), &buyers)
-	return buyers
-}
-func CsvToProducts(data string) []product {
-	all := strings.Split(strings.Replace(data, "\r\n", "\n", -1), "\n")
-	a := regexp.MustCompile(`(?m)^(?P<id>\w+)\'(?P<name>[ \'\w\+\&\-\"\%\&\.À-ÿ]+)\'(?P<price>\d+)$`)
-	var products []product
-	// fmt.Println(data)
-	for _, line := range all {
-		info := a.FindStringSubmatch(line)
-		if len(info) > 1 {
-			product := product{info[1], info[2], info[3]}
-			products = append(products, product)
-		}
-	}
-	return products
-}
-
-//  "/transactions"
-// info := getAllData(url, endpoints, date)
-// info2 := getAllData(url, endpoints, []string{""})
-// fmt.Println(info)
-// var buyers []buyer
-// json.Unmarshal([]byte(info), &buyers)
-
-// fmt.Println("Buyers : %+v", buyers[1])
-// func getAllData(url string, endpoints []string, date []string) string {
-// 	data := "2"
-// 	if date[0] == "" {
-// 		date[0] = strconv.FormatInt(time.Now().Unix(), 10)
-// 	}
-// 	data = getDataBuyer(url + endpoints[0] + "?date=" + date[0])
-// 	fmt.Println(url + endpoints[0] + "?date=" + date[0])
-// 	return data
-// }
-
 func getData(url string, date string, channel chan string) {
 	url = url + "?date=" + date
 	response, err := http.Get(url)
@@ -104,4 +66,39 @@ func getData(url string, date string, channel chan string) {
 		fmt.Println(err)
 	}
 	channel <- string(body)
+}
+func JsonToBuyers(data string) []buyer {
+	var buyers []buyer
+	json.Unmarshal([]byte(data), &buyers)
+	return buyers
+}
+func CsvToProducts(data string) []product {
+	all := strings.Split(strings.Replace(data, "\r\n", "\n", -1), "\n")
+
+	regex := regexp.MustCompile(`(?m)^(?P<id>\w+)\'(?P<name>[ \'\w\+\&\-\"\%\&\.À-ÿ]+)\'(?P<price>\d+)$`)
+
+	var products []product
+	for _, line := range all {
+		info := regex.FindStringSubmatch(line)
+		if len(info) > 1 {
+			product := product{info[1], info[2], info[3]}
+			products = append(products, product)
+		}
+	}
+	return products
+}
+func NfToTransactions(data string) []transaction {
+	cleaner := regexp.MustCompile(`[^a-zA-Z0-9\.\(\)\,\#]+`)
+	dataClean := cleaner.ReplaceAllString(data, "")
+
+	filter := regexp.MustCompile(`(?m)[\s]?(?P<id>#\w{12,12})\s?(?P<buyerid>\w{8,8})\s?(?P<ip>\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})\s?(?P<device>\w{3,10})\s?\((?P<transactions>[\w{8,8},?]{1,})\)\s?`)
+	info := filter.FindAllStringSubmatch(dataClean, -1)
+
+	var transactions []transaction
+	for _, params := range info {
+		products := strings.Split(params[5], ",")
+		transaction := transaction{params[1], params[2], params[3], params[4], products}
+		transactions = append(transactions, transaction)
+	}
+	return transactions
 }
