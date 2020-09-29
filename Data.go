@@ -9,60 +9,70 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 )
 
 //Buyer model from JSON
 type Buyer struct {
-	IDBuyer   string `json:"id"`
-	NameBuyer string `json:"name"`
-	AgeBuyer  int    `json:"age"`
+	BuyerID   string `json:"id"`
+	BuyerName string `json:"name"`
+	Age       int    `json:"age"`
 }
 
 //Product model
 type Product struct {
-	IDProduct    string
-	NameProduct  string
-	PriceProduct int
+	ProductID   string
+	ProductName string
+	Price       int
 }
 
 //Transaction model
 type Transaction struct {
-	IDTransaction string
-	IDBuyer       string
+	transactionID string
+	BuyerID       string
 	IP            string
 	Device        string
 	IDproduct     []string
 }
 
-func main() {
-	start := time.Now()
-	url := "https://kqxty15mpg.execute-api.us-east-1.amazonaws.com"
-	endpoint := []string{"/buyers", "/products", "/transactions"} // "/products",
-	date := "1577836800"
-
-	channelBuyer := make(chan string)
-	channelProduct := make(chan string)
-	channelTransaction := make(chan string)
-
-	go GetData(url+endpoint[0], date, channelBuyer)
-	go GetData(url+endpoint[1], date, channelProduct)
-	go GetData(url+endpoint[2], date, channelTransaction)
-
-	// dataBuyer := <-channelBuyer
-	dataProduct := <-channelProduct
-	// dataTransactions := <-channelTransaction
-
-	// buyers := JSONToBuyers(dataBuyer)
-	products := CSVToProducts(dataProduct)
-	// transactions := NSToTransactions(dataTransactions)
-	// fmt.Println(buyers)
-	fmt.Println(products)
-	// fmt.Println(transactions)
-	timeUsed := time.Since(start)
-	fmt.Printf("Tiempo de ejecucion %s\n", timeUsed)
-
+func FindBuyer(a []Buyer, x string) int {
+	for i, n := range a {
+		if x == n.BuyerID {
+			return i
+		}
+	}
+	return len(a) - 1
 }
+func FindProduct(a []Product, x string) int {
+	for i, n := range a {
+		if x == n.ProductID {
+			return i
+		}
+	}
+	return len(a) - 1
+}
+
+// func main() {
+// 	start := time.Now()
+// 	url := "https://kqxty15mpg.execute-api.us-east-1.amazonaws.com"
+// 	endpoint := []string{"/buyers", "/products", "/transactions"} // "/products",
+// 	date := "1577836800"
+
+// 	channelBuyer := make(chan string)
+// 	channelProduct := make(chan string)
+// 	channelTransaction := make(chan string)
+
+// 	go GetData(url+endpoint[0], date, channelBuyer)
+// 	go GetData(url+endpoint[1], date, channelProduct)
+// 	go GetData(url+endpoint[2], date, channelTransaction)
+
+// 	dataProduct := <-channelProduct
+
+// 	products := CSVToProducts(dataProduct)
+// 	fmt.Println(products)
+// 	timeUsed := time.Since(start)
+// 	fmt.Printf("Tiempo de ejecucion %s\n", timeUsed)
+
+// }
 
 //GetData from a url passinga a Date param
 func GetData(url string, date string, channel chan string) {
