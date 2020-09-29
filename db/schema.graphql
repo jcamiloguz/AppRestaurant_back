@@ -1,0 +1,30 @@
+#Create schema
+type buyer {
+	buyerID:String! @id
+	buyerName:String!
+	age:Int!
+}
+type product {
+	productID:String! @id
+	productName:String!
+	price:Int!
+}
+type transaction {
+	transactionID:String! @id
+	buyer:buyer!
+	ip:Int!
+	device:String!
+	product:[product!]!
+}
+# Add a transaction
+# mutation {
+#   addtransaction(input:[{transactionID:"sdadsa21",buyer:{buyerID:"213213ds",buyerName:"pedro",age:21},ip:223231,device:"mac",product:[{productID:"213213s",productName:"Iphone",price:23123}]}]){
+#     transaction{
+#       transactionID
+#       buyer{buyerID buyerName age} 
+#       ip
+#       device
+#       product{productID productName price }
+#     }
+#   }
+# }

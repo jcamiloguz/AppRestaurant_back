@@ -34,6 +34,7 @@ type Transaction struct {
 	IDproduct     []string
 }
 
+//FindBuyer Find a buyer from  id
 func FindBuyer(a []Buyer, x string) int {
 	for i, n := range a {
 		if x == n.BuyerID {
@@ -42,6 +43,8 @@ func FindBuyer(a []Buyer, x string) int {
 	}
 	return len(a) - 1
 }
+
+//FindProduct find a product from products
 func FindProduct(a []Product, x string) int {
 	for i, n := range a {
 		if x == n.ProductID {
@@ -51,28 +54,30 @@ func FindProduct(a []Product, x string) int {
 	return len(a) - 1
 }
 
-// func main() {
-// 	start := time.Now()
-// 	url := "https://kqxty15mpg.execute-api.us-east-1.amazonaws.com"
-// 	endpoint := []string{"/buyers", "/products", "/transactions"} // "/products",
-// 	date := "1577836800"
+//GetRestaInfo Get and struct all the retaurant info
+func GetRestaInfo(date string) []StrucingData {
+	url := "https://kqxty15mpg.execute-api.us-east-1.amazonaws.com"
+	endpoint := []string{"/buyers", "/products", "/transactions"} // "/products",
 
-// 	channelBuyer := make(chan string)
-// 	channelProduct := make(chan string)
-// 	channelTransaction := make(chan string)
+	channelBuyer := make(chan string)
+	channelProduct := make(chan string)
+	channelTransaction := make(chan string)
 
-// 	go GetData(url+endpoint[0], date, channelBuyer)
-// 	go GetData(url+endpoint[1], date, channelProduct)
-// 	go GetData(url+endpoint[2], date, channelTransaction)
+	go GetData(url+endpoint[0], date, channelBuyer)
+	go GetData(url+endpoint[1], date, channelProduct)
+	go GetData(url+endpoint[2], date, channelTransaction)
 
-// 	dataProduct := <-channelProduct
+	dataProduct := <-channelProduct
+	dataBuyer := <-channelBuyer
+	dataTransaction := <-channelTransaction
 
-// 	products := CSVToProducts(dataProduct)
-// 	fmt.Println(products)
-// 	timeUsed := time.Since(start)
-// 	fmt.Printf("Tiempo de ejecucion %s\n", timeUsed)
+	products := CSVToProducts(dataProduct)
+	buyers := JSONToBuyers(dataBuyer)
+	transactions := NSToTransactions(dataTransaction)
 
-// }
+	finalInfo := UnifyData(transactions, buyers, products)
+	return finalInfo
+}
 
 //GetData from a url passinga a Date param
 func GetData(url string, date string, channel chan string) {
@@ -134,4 +139,24 @@ func NSToTransactions(data string) []Transaction {
 		transactions = append(transactions, transaction)
 	}
 	return transactions
+}
+
+//UnifyData unify the transactions, buyers and products in one struct
+func UnifyData(transactions []Transaction, buyers []Buyer, products []Product) []StrucingData {
+	finalInfo := []StrucingData{}
+	for _, t := range transactions {
+		transacProcs := StrucingData{}
+		transacProcs.transactionID = t.transactionID
+		transacProcs.IP = t.IP
+		b := FindBuyer(buyers, t.BuyerID)
+		transacProcs.Buyer = buyers[b]
+		for _, pro := range t.IDproduct {
+			d := FindProduct(products, pro)
+			transacProcs.Product = append(transacProcs.Product, products[d])
+
+		}
+		transacProcs.Device = t.Device
+		finalInfo = append(finalInfo, transacProcs)
+	}
+	return finalInfo
 }
