@@ -2,16 +2,20 @@ package main
 
 //Buyer model from JSON
 type Buyer struct {
-	BuyerID   string `json:"buyer_id"`
-	BuyerName string `json:"buyer_name"`
-	Age       int    `json:"age"`
+	Uid       string   `json:"uid"`
+	BuyerID   string   `json:"id"`
+	BuyerName string   `json:"name"`
+	Age       int      `json:"age"`
+	DType     []string `json:"dgraph.type"`
 }
 
 //Product model
 type Product struct {
-	ProductID   string `json:"product_id"`
-	ProductName string `json:"product_name"`
-	Price       int    `json:"price"`
+	Uid         string   `json:"uid"`
+	ProductID   string   `json:"product_id"`
+	ProductName string   `json:"product_name"`
+	Price       int      `json:"price"`
+	DType       []string `json:"dgraph.type"`
 }
 
 //Transaction model
@@ -25,11 +29,13 @@ type Transaction struct {
 
 //StrucingData infos
 type StrucingData struct {
+	Uid           string    `json:"uid"`
 	TransactionID string    `json:"transaction_id"`
 	Buyer         Buyer     `json:"buyer"`
 	IP            string    `json:"ip"`
 	Device        string    `json:"device"`
 	Product       []Product `json:"products"`
+	DType         []string  `json:"dgraph.type"`
 }
 
 //GetRestaInfo Get and struct all the retaurant info

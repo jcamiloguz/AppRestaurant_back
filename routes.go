@@ -16,6 +16,7 @@ func Route() *chi.Mux {
 		middleware.Recoverer,
 	)
 	mux.Get("/buyer", getBuyersHandler)
+	mux.Post("/buyer", postBuyersHandler)
 	return mux
 }
 func getBuyersHandler(w http.ResponseWriter, r *http.Request) {
@@ -24,4 +25,9 @@ func getBuyersHandler(w http.ResponseWriter, r *http.Request) {
 	info := GetRestaInfo("2332132")
 	json.NewEncoder(w).Encode(info)
 
+}
+
+func postBuyersHandler(w http.ResponseWriter, r *http.Request) {
+	info := GetRestaInfo(r.URL.Query().Get("data"))
+	json.NewEncoder(w).Encode(info)
 }

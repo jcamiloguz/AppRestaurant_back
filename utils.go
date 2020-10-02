@@ -50,6 +50,10 @@ func GetData(url string, date string, channel chan string) {
 func JSONToBuyers(data string) []Buyer {
 	var buyers []Buyer
 	json.Unmarshal([]byte(data), &buyers)
+	for i, b := range buyers {
+		buyers[i].Uid = "_:" + b.BuyerID
+		buyers[i].DType = []string{"Buyers"}
+	}
 	return buyers
 }
 
@@ -69,7 +73,7 @@ func CSVToProducts(data string) []Product {
 				fmt.Println(err)
 				os.Exit(2)
 			}
-			product := Product{info[1], info[2], price}
+			product := Product{"_:" + info[1], info[1], info[2], price, []string{"Product"}}
 			products = append(products, product)
 		}
 	}
@@ -98,6 +102,7 @@ func UnifyData(transactions []Transaction, buyers []Buyer, products []Product) [
 	finalInfo := []StrucingData{}
 	for _, t := range transactions {
 		transacProcs := StrucingData{}
+		transacProcs.Uid = ":_" + t.transactionID
 		transacProcs.TransactionID = t.transactionID
 		transacProcs.IP = t.IP
 		b := FindBuyer(buyers, t.BuyerID)
@@ -108,6 +113,7 @@ func UnifyData(transactions []Transaction, buyers []Buyer, products []Product) [
 
 		}
 		transacProcs.Device = t.Device
+		transacProcs.DType = []string{"Transaction"}
 		finalInfo = append(finalInfo, transacProcs)
 	}
 	return finalInfo
