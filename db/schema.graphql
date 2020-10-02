@@ -10,8 +10,8 @@ type product {
 	price:Int!
 }
 type transaction {
-	transactionID:String! @id
-	buyer:buyer!
+	transactionID:String! @id 
+	buyer:buyer! @search (by:buyerID)
 	ip:Int!
 	device:String!
 	product:[product!]!
@@ -28,3 +28,12 @@ type transaction {
 #     }
 #   }
 # }
+#Query for get all buyers 
+#query {
+#   querybuyer {
+#   	buyerID 
+#   	buyerName
+#     age
+#   }
+# }
+#Query for each buyer
