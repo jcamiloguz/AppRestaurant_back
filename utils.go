@@ -102,7 +102,8 @@ func UnifyData(transactions []Transaction, buyers []Buyer, products []Product) [
 	finalInfo := []StrucingData{}
 	for _, t := range transactions {
 		transacProcs := StrucingData{}
-		transacProcs.Uid = ":_" + t.transactionID
+		id := strings.Replace(t.transactionID, "#", "", -1)
+		transacProcs.Uid = "_:" + id
 		transacProcs.TransactionID = t.transactionID
 		transacProcs.IP = t.IP
 		b := FindBuyer(buyers, t.BuyerID)
