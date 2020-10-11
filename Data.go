@@ -20,11 +20,13 @@ type Product struct {
 
 //Transaction model
 type Transaction struct {
-	transactionID string
-	BuyerID       string
-	IP            string
-	Device        string
-	IDproduct     []string
+	Uid           string   `json:"uid"`
+	TransactionID string   `json:"transaction_id"`
+	BuyerID       string   `json:"buyer_id"`
+	IP            string   `json:"ip"`
+	Device        string   `json:"device"`
+	IDproduct     []string `json:"products_id"`
+	DType         []string `json:"dgraph.type"`
 }
 
 //StrucingData infos
@@ -37,9 +39,18 @@ type StrucingData struct {
 	Product       []Product `json:"products"`
 	DType         []string  `json:"dgraph.type"`
 }
+type TransactionsRsp struct {
+	Transaction_id string
+	Ip             string
+	Device         string
+	Products_id    []string
+}
+type RespTransaction struct {
+	Transactions []byte
+}
 
 //GetRestaInfo Get and struct all the retaurant info
-func GetRestaInfo(date string) []StrucingData {
+func GetRestaInfo(date string) ([]Buyer, []Product, []Transaction) {
 	url := "https://kqxty15mpg.execute-api.us-east-1.amazonaws.com"
 	endpoint := []string{"/buyers", "/products", "/transactions"} // "/products",
 
@@ -59,6 +70,5 @@ func GetRestaInfo(date string) []StrucingData {
 	buyers := JSONToBuyers(dataBuyer)
 	transactions := NSToTransactions(dataTransaction)
 
-	finalInfo := UnifyData(transactions, buyers, products)
-	return finalInfo
+	return buyers, products, transactions
 }

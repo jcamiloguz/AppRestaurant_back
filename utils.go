@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"regexp"
@@ -91,31 +92,48 @@ func NSToTransactions(data string) []Transaction {
 	var transactions []Transaction
 	for _, params := range info {
 		products := strings.Split(params[5], ",")
-		transaction := Transaction{params[1], params[2], params[3], params[4], products}
+		transaction := Transaction{"_:" + params[1], params[1], params[2], params[3], params[4], products, []string{"Transaction"}}
 		transactions = append(transactions, transaction)
 	}
 	return transactions
 }
 
-//UnifyData unify the transactions, buyers and products in one struct
-func UnifyData(transactions []Transaction, buyers []Buyer, products []Product) []StrucingData {
-	finalInfo := []StrucingData{}
-	for _, t := range transactions {
-		transacProcs := StrucingData{}
-		id := strings.Replace(t.transactionID, "#", "", -1)
-		transacProcs.Uid = "_:" + id
-		transacProcs.TransactionID = t.transactionID
-		transacProcs.IP = t.IP
-		b := FindBuyer(buyers, t.BuyerID)
-		transacProcs.Buyer = buyers[b]
-		for _, pro := range t.IDproduct {
-			d := FindProduct(products, pro)
-			transacProcs.Product = append(transacProcs.Product, products[d])
-
-		}
-		transacProcs.Device = t.Device
-		transacProcs.DType = []string{"Transaction"}
-		finalInfo = append(finalInfo, transacProcs)
+//JSONMarshall Marshall buyers, products and transactions
+func JSONMarshall(buyers []Buyer, products []Product, transactions []Transaction) ([]byte, []byte, []byte) {
+	buyersJSON, err := json.Marshal(buyers)
+	if err != nil {
+		log.Fatal(err)
 	}
-	return finalInfo
+	productsJSON, err := json.Marshal(products)
+	if err != nil {
+		log.Fatal(err)
+	}
+	transactionsJSON, err := json.Marshal(transactions)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return buyersJSON, productsJSON, transactionsJSON
 }
+
+//UnifyData unify the transactions, buyers and products in one struct
+// func UnifyData(transactions []Transaction, buyers []Buyer, products []Product) []StrucingData {
+// 	finalInfo := []StrucingData{}
+// 	for _, t := range transactions {
+// 		transacProcs := StrucingData{}
+// 		id := strings.Replace(t.transactionID, "#", "", -1)
+// 		transacProcs.Uid = "_:" + id
+// 		transacProcs.TransactionID = t.transactionID
+// 		transacProcs.IP = t.IP
+// 		b := FindBuyer(buyers, t.BuyerID)
+// 		transacProcs.Buyer = buyers[b]
+// 		for _, pro := range t.IDproduct {
+// 			d := FindProduct(products, pro)
+// 			transacProcs.Product = append(transacProcs.Product, products[d])
+
+// 		}
+// 		transacProcs.Device = t.Device
+// 		transacProcs.DType = []string{"Transaction"}
+// 		finalInfo = append(finalInfo, transacProcs)
+// 	}
+// 	return finalInfo
+// }

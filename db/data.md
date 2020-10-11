@@ -54,3 +54,70 @@ device: string .
 id: string  @index(term) .
 
 ```
+
+
+
+{  "set":[
+  {
+	"uid": "_:wqe123",
+  "id":"wqe123",
+  "dgraph.type":"buyer",
+  "name":"pedro",
+  "age":"32"
+},
+  {
+	"uid": "_:213gj",
+  "id":"213gj",
+  "dgraph.type":"buyer",
+  "name":"juan",
+  "age":"18"
+}
+]
+}
+
+
+
+{  "set":[
+  {
+	"uid": "_:231dsd",
+  "id":"231dsd",
+  "dgraph.type":"product",
+  "name":"pizza",
+  "price":"32133"
+},
+  {
+	"uid": "_:dsvger3",
+  "id":"dsvger3",
+  "dgraph.type":"product",
+  "name":"hotdog",
+  "price":"12318"
+}
+]
+}
+
+{  "set":[
+  {
+	"uid": "_:dsaad",
+  "id":"dsaad",
+  "dgraph.type":"trasaction",
+  "ip":"2313213",
+  "device":"mac",
+  "buyerid":"wqe123",
+  "products":["231dsd","dsvger3"]
+}
+]
+}
+
+
+{  
+  var(func: eq(id, "wqe123")) {
+    name
+  age
+    BUY as id
+  
+  }
+trans(func: eq(buyerid, val(BUY)) {
+  ip
+  device
+}
+}
