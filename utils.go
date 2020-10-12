@@ -115,6 +115,30 @@ func JSONMarshall(buyers []Buyer, products []Product, transactions []Transaction
 	return buyersJSON, productsJSON, transactionsJSON
 }
 
+//GetRestaInfo Get and struct all the retaurant info
+func GetRestaInfo(date string) ([]Buyer, []Product, []Transaction) {
+	url := "https://kqxty15mpg.execute-api.us-east-1.amazonaws.com"
+	endpoint := []string{"/buyers", "/products", "/transactions"} // "/products",
+
+	channelBuyer := make(chan string)
+	channelProduct := make(chan string)
+	channelTransaction := make(chan string)
+
+	go GetData(url+endpoint[0], date, channelBuyer)
+	go GetData(url+endpoint[1], date, channelProduct)
+	go GetData(url+endpoint[2], date, channelTransaction)
+
+	dataProduct := <-channelProduct
+	dataBuyer := <-channelBuyer
+	dataTransaction := <-channelTransaction
+
+	products := CSVToProducts(dataProduct)
+	buyers := JSONToBuyers(dataBuyer)
+	transactions := NSToTransactions(dataTransaction)
+
+	return buyers, products, transactions
+}
+
 //UnifyData unify the transactions, buyers and products in one struct
 // func UnifyData(transactions []Transaction, buyers []Buyer, products []Product) []StrucingData {
 // 	finalInfo := []StrucingData{}

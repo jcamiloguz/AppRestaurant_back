@@ -40,35 +40,29 @@ type StrucingData struct {
 	DType         []string  `json:"dgraph.type"`
 }
 type TransactionsRsp struct {
-	Transaction_id string
-	Ip             string
-	Device         string
-	Products_id    []string
+	Ip          string   `json:"ip"`
+	Device      string   `json:"device"`
+	Products_id []string `json:"products_id"`
 }
-type RespTransaction struct {
-	Transactions []byte
+type BuyerRsp struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
+type RespBuyer struct {
+	Transaction []TransactionsRsp `json:"transaction"`
+	Buyers      []BuyerRsp        `json:"buyers"`
+}
+type ProductRsp struct {
+	Product_id string `json:"product_id"`
+	Name       string `json:"product_name"`
+	Price      int    `json:"price"`
+}
+type RespProduct struct {
+	Products []ProductRsp `json:"products"`
 }
 
-//GetRestaInfo Get and struct all the retaurant info
-func GetRestaInfo(date string) ([]Buyer, []Product, []Transaction) {
-	url := "https://kqxty15mpg.execute-api.us-east-1.amazonaws.com"
-	endpoint := []string{"/buyers", "/products", "/transactions"} // "/products",
-
-	channelBuyer := make(chan string)
-	channelProduct := make(chan string)
-	channelTransaction := make(chan string)
-
-	go GetData(url+endpoint[0], date, channelBuyer)
-	go GetData(url+endpoint[1], date, channelProduct)
-	go GetData(url+endpoint[2], date, channelTransaction)
-
-	dataProduct := <-channelProduct
-	dataBuyer := <-channelBuyer
-	dataTransaction := <-channelTransaction
-
-	products := CSVToProducts(dataProduct)
-	buyers := JSONToBuyers(dataBuyer)
-	transactions := NSToTransactions(dataTransaction)
-
-	return buyers, products, transactions
+type DetailResponse struct {
+	Buyers   RespBuyer   `json:"Details"`
+	Products RespProduct `json:"History"`
 }

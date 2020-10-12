@@ -13,6 +13,46 @@ import (
 	"github.com/go-chi/cors"
 )
 
+const queryBuyers string = `
+{
+	buyers(func:has(name)){
+		 id
+		 name
+		 age
+	}
+}
+`
+const queryDetails string = `
+{
+	transaction(func: eq(buyer_id,"%s")){
+		IP as ip
+		product_id
+		device
+		products_id
+	}
+	var(func: eq (ip, val(IP))){
+		BUY as buyer_id
+	}
+		buyers(func: eq(id, val(BUY))){
+			id
+			name
+			age
+			
+		}
+}
+`
+const queryProducts string = `
+{
+	products(func: eq(product_id,"%s")){
+
+		product_id
+		product_name
+		price
+	}
+
+}
+`
+
 func Route() *chi.Mux {
 	mux := chi.NewMux()
 	cors := cors.New(cors.Options{
@@ -50,16 +90,8 @@ func getBuyersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("done-by", "jcamiloguz")
 	dgClient := newClient()
 	txn := dgClient.NewTxn()
-	const q = `
-	{
-		buyers(func:has(name)){
-			 id
-			 name
-			 age
-		}
-	}
-	`
-	resp, err := txn.Query(context.Background(), q)
+
+	resp, err := txn.Query(context.Background(), queryBuyers)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -119,39 +151,42 @@ func paginate(next http.Handler) http.Handler {
 }
 
 func GetBuyer(w http.ResponseWriter, r *http.Request) {
-	// Assume if we've reach this far, we can access the article
-	// context because this handler is a child of the ArticleCtx
-	// middleware. The worst case, the recoverer middleware will save us.
 	buyer := chi.URLParam(r, "buyer")
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("done-by", "jcamiloguz")
 	dgClient := newClient()
-	txn := dgClient.NewTxn()
-	q := fmt.Sprintf(`{
-		transaction(func: eq(buyer_id,"%s")){
-      ip
-      product_id
-      device
-      products_id
-		}
-	}`, buyer)
-	resp, err := txn.Query(context.Background(), q)
+	txnBuy := dgClient.NewTxn()
+	txnPro := dgClient.NewTxn()
+	q := fmt.Sprintf(queryDetails, buyer)
+	resp, err := txnBuy.Query(context.Background(), q)
 	if err != nil {
 		log.Fatal(err)
 	}
-	var Transactions RespTransaction
-	var TransactionsResp TransactionsRsp
-	error := json.Unmarshal(resp.GetJson(), &Transactions)
-	if error != nil {
-		fmt.Println("error:", error)
+	var decodeBuyer RespBuyer
+	var history RespProduct
+	if err := json.Unmarshal(resp.GetJson(), &decodeBuyer); err != nil {
+		log.Fatal(err)
 	}
-	data := Transactions.Transactions
-	json.NewEncoder(w).Encode(data)
+	for _, trans := range decodeBuyer.Transaction {
+		for _, product := range trans.Products_id {
+			var decodeProduct RespProduct
+			p := fmt.Sprintf(queryProducts, product)
+			resp, err := txnPro.Query(context.Background(), p)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if err := json.Unmarshal(resp.GetJson(), &decodeProduct); err != nil {
+				log.Fatal(err)
+			}
+			product := decodeProduct.Products
+			history.Products = append(history.Products, product...)
 
-	errorH := json.Unmarshal(data, &TransactionsResp)
-	if errorH != nil {
-		fmt.Println("error2:", errorH)
+		}
 	}
-	fmt.Printf("%+v", TransactionsResp)
+	Response := DetailResponse{
+		decodeBuyer,
+		history,
+	}
+	json.NewEncoder(w).Encode(Response)
 
 }
