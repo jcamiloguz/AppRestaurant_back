@@ -29,7 +29,46 @@ type Transaction struct {
 	DType         []string `json:"dgraph.type"`
 }
 
-//StrucingData infos
+//TransactionsRsp response Transaction struct
+type TransactionsRsp struct {
+	Ip          string   `json:"ip"`
+	Device      string   `json:"device"`
+	Products_id []string `json:"products_id"`
+}
+
+//BuyerRsp response Buyer struct
+type BuyerRsp struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
+
+//ProductRsp response Product struct
+type ProductRsp struct {
+	Product_id string `json:"product_id"`
+	Name       string `json:"product_name"`
+	Price      int    `json:"price"`
+}
+
+//Details Model
+type Details struct {
+	Buyer       []BuyerRsp        `json:"buyer`
+	Transaction []TransactionsRsp `json:"transaction"`
+	Buyers      []BuyerRsp        `json:"buyers"`
+}
+
+//History Model
+type History struct {
+	Products []ProductRsp `json:"products"`
+}
+
+//DetailResponse Main model
+type DetailResponse struct {
+	Buyers   Details `json:"Details"`
+	Products History `json:"History"`
+}
+
+//StrucingData likely the best way to sruct the mutation, Redundancy Degraph problems
 type StrucingData struct {
 	Uid           string    `json:"uid"`
 	TransactionID string    `json:"transaction_id"`
@@ -38,32 +77,4 @@ type StrucingData struct {
 	Device        string    `json:"device"`
 	Product       []Product `json:"products"`
 	DType         []string  `json:"dgraph.type"`
-}
-type TransactionsRsp struct {
-	Ip          string   `json:"ip"`
-	Device      string   `json:"device"`
-	Products_id []string `json:"products_id"`
-}
-type BuyerRsp struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-	Age  int    `json:"age"`
-}
-type RespBuyer struct {
-	Buyer       []BuyerRsp        `json:"buyer`
-	Transaction []TransactionsRsp `json:"transaction"`
-	Buyers      []BuyerRsp        `json:"buyers"`
-}
-type ProductRsp struct {
-	Product_id string `json:"product_id"`
-	Name       string `json:"product_name"`
-	Price      int    `json:"price"`
-}
-type RespProduct struct {
-	Products []ProductRsp `json:"products"`
-}
-
-type DetailResponse struct {
-	Buyers   RespBuyer   `json:"Details"`
-	Products RespProduct `json:"History"`
 }

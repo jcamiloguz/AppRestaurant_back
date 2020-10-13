@@ -148,8 +148,6 @@ func postBuyersHandler(w http.ResponseWriter, r *http.Request) {
 }
 func paginate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// just a stub.. some ideas are to look at URL query params for something like
-		// the page number, or the limit, and send a query cursor down the chain
 		next.ServeHTTP(w, r)
 	})
 }
@@ -166,14 +164,14 @@ func GetBuyer(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var decodeBuyer RespBuyer
-	var history RespProduct
-	if err := json.Unmarshal(resp.GetJson(), &decodeBuyer); err != nil {
+	var Details Details
+	var history History
+	if err := json.Unmarshal(resp.GetJson(), &Details); err != nil {
 		log.Fatal(err)
 	}
-	for _, trans := range decodeBuyer.Transaction {
+	for _, trans := range Details.Transaction {
 		for _, product := range trans.Products_id {
-			var decodeProduct RespProduct
+			var decodeProduct History
 			p := fmt.Sprintf(queryProducts, product)
 			resp, err := txnPro.Query(context.Background(), p)
 			if err != nil {
@@ -188,7 +186,7 @@ func GetBuyer(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	Response := DetailResponse{
-		decodeBuyer,
+		Details,
 		history,
 	}
 	json.NewEncoder(w).Encode(Response)
