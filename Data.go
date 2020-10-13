@@ -50,6 +50,7 @@ type BuyerRsp struct {
 	Age  int    `json:"age"`
 }
 type RespBuyer struct {
+	Buyer       []BuyerRsp        `json:"buyer`
 	Transaction []TransactionsRsp `json:"transaction"`
 	Buyers      []BuyerRsp        `json:"buyers"`
 }

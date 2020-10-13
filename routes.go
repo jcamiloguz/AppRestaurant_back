@@ -24,7 +24,12 @@ const queryBuyers string = `
 `
 const queryDetails string = `
 {
-	transaction(func: eq(buyer_id,"%s")){
+	buyer(func: eq(id,"%s")){
+		ID as id
+		name 
+		age
+	}
+	transaction(func: eq(buyer_id,val(ID))){
 		IP as ip
 		product_id
 		device
@@ -44,7 +49,6 @@ const queryDetails string = `
 const queryProducts string = `
 {
 	products(func: eq(product_id,"%s")){
-
 		product_id
 		product_name
 		price
@@ -72,9 +76,9 @@ func Route() *chi.Mux {
 		cors.Handler,
 	)
 
+	mux.Post("/sync", postBuyersHandler)
 	mux.Route("/buyer", func(r chi.Router) {
 		r.With(paginate).Get("/", getBuyersHandler)
-		r.With(paginate).Post("/", postBuyersHandler)
 
 		r.Route("/{buyer}", func(r chi.Router) {
 			r.Get("/", GetBuyer) // GET /articles/123

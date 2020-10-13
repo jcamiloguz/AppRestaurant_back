@@ -1,20 +1,18 @@
 #Create schema
-type buyer {
-	buyerID:String! @id
-	buyerName:String!
-	age:Int!
-}
-type product {
-	productID:String! @id
-	productName:String!
-	price:Int!
-}
-type transaction {
-	transactionID:String! @id 
-	buyer:buyer! @search (by:buyerID)
-	ip:Int!
-	device:String!
-	product:[product!]!
+<age>: int .
+<buyer_id>: string @index(exact) .
+<device>: string .
+<dgraph.graphql.schema>: string .
+<id>: string @index(exact) .
+<ip>: string @index(exact) .
+<name>: string .
+<price>: int .
+<product_id>: string @index(exact) .
+<product_name>: string .
+<products_id>: [string] .
+<transaction_id>: string .
+type <dgraph.graphql> {
+	dgraph.graphql.schema
 }
 # Add a transaction
 # mutation {
