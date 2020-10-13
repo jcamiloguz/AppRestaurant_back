@@ -57,6 +57,7 @@ const queryProducts string = `
 }
 `
 
+//Route Creating a CHI Router
 func Route() *chi.Mux {
 	mux := chi.NewMux()
 	cors := cors.New(cors.Options{
@@ -81,7 +82,7 @@ func Route() *chi.Mux {
 		r.With(paginate).Get("/", getBuyersHandler)
 
 		r.Route("/{buyer}", func(r chi.Router) {
-			r.Get("/", GetBuyer) // GET /articles/123
+			r.Get("/", getBuyer) // GET /articles/123
 		})
 
 	})
@@ -152,7 +153,7 @@ func paginate(next http.Handler) http.Handler {
 	})
 }
 
-func GetBuyer(w http.ResponseWriter, r *http.Request) {
+func getBuyer(w http.ResponseWriter, r *http.Request) {
 	buyer := chi.URLParam(r, "buyer")
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("done-by", "jcamiloguz")

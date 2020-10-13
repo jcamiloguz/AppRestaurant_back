@@ -8,10 +8,12 @@ import (
 	"github.com/go-chi/chi"
 )
 
+//MyServer own struct server
 type MyServer struct {
 	server *http.Server
 }
 
+//NewServer Create a CHI API Server
 func NewServer(mux *chi.Mux) *MyServer {
 	s := &http.Server{
 		Addr:           ":9000",
@@ -22,6 +24,8 @@ func NewServer(mux *chi.Mux) *MyServer {
 	}
 	return &MyServer{s}
 }
+
+//Run a Server
 func (s *MyServer) Run() {
 	log.Fatal(s.server.ListenAndServe())
 
